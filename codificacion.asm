@@ -27,40 +27,44 @@ main:
 
 loop_codificar:
 		; cargo 3 bytes de la secuencia binaria en ebx
+		; cargo un byte de rsi en la seccion de bits menos significativos de ebx (bl o byte low) y luego muevo el contenido del registro 8 bits a la izquierda, y repito 3 veces con los siguientes bytes de rsi
 		movzx	ebx,	byte [rsi]
 		shl	ebx,	8
 		mov	bl,	[rsi + 1]
 		shl	ebx,	8
 		mov	bl,	[rsi + 2]
+		; entonces tengo en ebx, del bit 0 al 7, basura, y luego los bytes
 
 		; separo los grupos, los traduzco y los muevo a secuenciaImprimibleA
-		; 1er grupo
-		mov	eax,	ebx
-		shr	eax,	18
-		and	eax,	0x3F
-		mov	al,	[rdx + rax]
-		mov	[rdi],	al
+		;  
+		; 1er grupo: bits 8 -> 13
+		mov	eax,	ebx ; hago una copia de ebx
+		shr	eax,	18 ; muevo los bits a la derecha hasta que el grupo de bits buscado este todo en el sector menos significativo
+		and	eax,	0x3F ; aplico una mascara de bits al registro, como 0x3F = ...0000111111, entonces solo los ultimos 6 bits no quedan en estrictamente 0
+		mov	al,	[rdx + rax] ; copia en `al` a lo almacenado en la direccion resultante de sumar la base de TablaConversion, que copiamos en rdx, y el desplazamiento calculado en rax
+		mov	[rdi],	al ; escribo el caracter guardado en `al` en la direccion de secuenciaImprimibleA
 
-		; 2do grupo
+		; 2do grupo: bits 14 -> 19
 		mov	eax,	ebx
 		shr	eax,	12
 		and	eax,	0x3F
 		mov	al,	[rdx + rax]
 		mov	[rdi + 1],	al
 
-		; 3er grupo
+		; 3er grupo: bits 20 -> 25
 		mov	eax,	ebx
 		shr	eax,	6
 		and	eax,	0x3F
 		mov	al,	[rdx + rax]
 		mov	[rdi + 2],	al
 
-		; 4to grupo
+		; 4to grupo: bits 26 -> 31
 		mov	eax,	ebx
 		and	eax,	0x3F
 		mov	al,	[rdx + rax]
 		mov	[rdi + 3],	al
 
+		; avanzo los punteros a secuenciaBinariaA y secuenciaImprimibleA
 		add	rsi,	3
 		add	rdi,	4
 		loop	loop_codificar
