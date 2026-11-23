@@ -25,7 +25,7 @@ eliminar caracteres de relleno)
 El codificador toma una secuencia de 24 bytes definidos en la seccion `.data` bajo el nombre de `secuenciaBinariaA` y los conviercodifica en base64 para obtener una cadena de carcteres imprimibles, convirtiendo de a 3 bytes en 4 caracteres, la cual se guarda en el espacio reservado bajo el nombre de `secuenciaImprimibleA`. Al transformar la secuencia de bytes a caracteres, esto se hace segun la tabla definida bajo el nombre de `TablaConversion`.
 
 Para hacer esto se decidio utilizar las versiones de 32 bits de los registros ya que es el tamaño mas pequeño de registro que puede almacenar 24 bits.
-Y se trabaja en la seccion mas a la derecha (menos significativa) ya que nos permite cargar de a 3 bytes facilmente con el byte low del registro, y luego poder acceder a cada grupo con shifts del tamaño de estos; poder alinear los bytes para aplicarle la mascara asi apagar los bits que no se van a usar.
+Y se trabaja en la seccion mas a la derecha (menos significativa) ya que nos permite cargar de a 3 bytes facilmente haciendo uso el byte low del registro, y luego poder acceder a cada grupo con shifts del tamaño de estos; tambien deja alineados a los bytes para aplicarle la mascara asi apagar los bits que no se van a usar.
 
 La eleccion de algunos registros fueron impuestos por las instrucciones y otros siguen convenciones:
  * RSI y RDI: Por convencion, RSI se utiliza como puntero de origen (`secuenciaBinariaA`) y RDI como puntero al destino(`secuenciaImprimibleA`)
