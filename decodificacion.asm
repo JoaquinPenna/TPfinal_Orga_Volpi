@@ -52,10 +52,6 @@ busqueda_posicion:
     
     jne busqueda_posicion
     
-    ; Si se llega hasta acá, es porque hay un caracter
-    ; que no aparece en la tabla
-    
-    je caracter_invalido
      
      
 posicion_encontrada: 
@@ -121,13 +117,6 @@ generar_bytes:
 
     ret
     
-
-caracter_invalido:
-    ; Finaliza el programa indicando que hubo un error
-    
-    mov eax, 60
-    mov edi, 1 
-    syscall
     
     
     
