@@ -22,7 +22,17 @@ eliminar caracteres de relleno)
 
 
 ### Codificación
-El codificador convertirá una secuencia de 24 bytes binarios a 32 caracteres imprimibles. Para hacer esto, primero se calcula la cantidad de iteracciones necesarias a ser recorrida, tomando grupos de a 3 bytes. Estos bytes se agruparán en un registro de 32 bits para luego dividirlo en cuatro grupos de 6 bits. Cada grupo de bits será utilizado para encontrar la posicion de cada caracter correpondiente a la tabla (TablaConversion) y el resultado se almacenará en un espacio reservado para esto (secuenciaImprimibleA).
+El codificador toma una secuencia de 24 bytes definidos en la seccion `.data` bajo el nombre de `secuenciaBinariaA` y los conviercodifica en base64 para obtener una cadena de carcteres imprimibles, convirtiendo de a 3 bytes en 4 caracteres, la cual se guarda en el espacio reservado bajo el nombre de `secuenciaImprimibleA`. Al transformar la secuencia de bytes a caracteres, esto se hace segun la tabla definida bajo el nombre de `TablaConversion`.
+
+Para hacer esto se decidio utilizar las versiones de 32 bits de los registros ya que es el tamaño mas pequeño de registro que puede almacenar 24 bits.
+Y se trabaja en la seccion mas a la derecha (menos significativa) ya que nos permite cargar de a 3 bytes facilmente con el byte low del registro, y luego poder acceder a cada grupo con shifts del tamaño de estos; poder alinear los bytes para aplicarle la mascara asi apagar los bits que no se van a usar.
+
+La eleccion de algunos registros fueron impuestos por las instrucciones y otros siguen convenciones:
+ * RSI y RDI: Por convencion, RSI se utiliza como puntero de origen (`secuenciaBinariaA`) y RDI como puntero al destino(`secuenciaImprimibleA`)
+ * RCX/ECX: Es un requisito de la instrucción loop `loop_codificar`. Cada vez que se ejecuta loop, el procesador decrementa RCX en 1 y salta si RCX != 0
+ * RAX/EAX/AL: Es exigido por la instrucción div para recibir el dividendo y guardar ahi el cociente. Dentro del bucle se reutiliza como registro acumulador/temporal para desplazar bits, aplicar la mascara y buscar el caracter en la tabla.  
+ * RDX/EDX: Es utilizado por div. Una vez hecha la division, queda libre para almacenar la direccion base de 64 bits de `TablaConversion` y permitir el desplazaminto al indice `[rdx + rax]`.
+ * RBX/EBX/BL: Se usa como registro de proposito general.
 
 ### Decodificación
 El decodificador convierte una cadena de 32 caracteres impribles en sus 24 bytes originales. Para esto, se recorre la cadena caracter por caracter y se busca cada uno en la tabla de conversión (TablaConversion), logrando obtener de cada uno su posición en dicha tabla.

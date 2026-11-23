@@ -17,6 +17,7 @@ main:
 		lea	rdi,	[rel secuenciaImprimibleA]
 
 		; calculo la cantidad de iteraciones que tengo que hacer
+		; en base64  cada iteracion consume 3 bytes para hacer 4 caracteres como largoSecuencia debe ser multiplo de 3, podemos calcular la cantidad de veces que podemos convertir 3 bytes a carcteres entonces dividimos por 3
 		movzx	eax,	byte [rel largoSecuenciaA]
 		xor	edx,	edx
 		mov	ebx,	3
