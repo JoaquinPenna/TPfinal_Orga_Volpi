@@ -22,7 +22,7 @@ eliminar caracteres de relleno)
 
 
 ### Codificación
-El codificador toma una secuencia de 24 bytes definidos en la seccion `.data` bajo el nombre de `secuenciaBinariaA` y los conviercodifica en base64 para obtener una cadena de carcteres imprimibles, convirtiendo de a 3 bytes en 4 caracteres, la cual se guarda en el espacio reservado bajo el nombre de `secuenciaImprimibleA`. Al transformar la secuencia de bytes a caracteres, esto se hace segun la tabla definida bajo el nombre de `TablaConversion`.
+El codificador toma una secuencia de 24 bytes definidos en la seccion `.data` bajo el nombre de `secuenciaBinariaA` y los codifica en base64 para obtener una cadena de caracteres imprimibles, convirtiendo de a 3 bytes en 4 caracteres, la cual se guarda en el espacio reservado bajo el nombre de `secuenciaImprimibleA`. Al transformar la secuencia de bytes a caracteres, esto se hace segun la tabla definida bajo el nombre de `TablaConversion`.
 
 Para hacer esto se decidio utilizar las versiones de 32 bits de los registros ya que es el tamaño mas pequeño de registro que puede almacenar 24 bits.
 Y se trabaja en la seccion mas a la derecha (menos significativa) ya que nos permite cargar de a 3 bytes facilmente haciendo uso el byte low del registro, y luego poder acceder a cada grupo con shifts del tamaño de estos; tambien deja alineados a los bytes para aplicarle la mascara asi apagar los bits que no se van a usar.
@@ -35,7 +35,21 @@ La eleccion de algunos registros fueron impuestos por las instrucciones y otros 
  * RBX/EBX/BL: Se usa como registro de proposito general.
 
 ### Decodificación
-El decodificador convierte una cadena de 32 caracteres impribles en sus 24 bytes originales. Para esto, se recorre la cadena caracter por caracter y se busca cada uno en la tabla de conversión (TablaConversion), logrando obtener de cada uno su posición en dicha tabla.
-Luego se acumulan las posiciones en grupos de solo 4 caracteres. Una vez obtenidos las 4 posiciones de cada caracter, se reconstruyen hacia unicamente 3 bytes. Dichos bytes van a ser una secuencia binaria que van a ser almacenados en dentro de un espacio reservado (secuenciaBinariaB). Luego el proceso se repite hasta procesar todos los caracteres imprimibles (secuenciaImpribleB).
+El decodificador toma una cadena de 32 caracteres imprimibles de la sección `secuenciaImprimibleB` y los convierte de Base64 a una secuencia de 24 bytes, que se almacenan en el espacio reservado `secuenciaBinariaB`. Para hacer esta conversión, se trabaja con grupos de 4 caracteres imprimibles, obteniendo la posición de cada uno dentro de la tabla definida bajo el nombre de `TablaConversion`. Luego, se agrupan esas 4 posiciones para reconstruir los 24 bits originales, a partir de los cuales se generan 3 bytes.
+
+Para hacer esto se utilizó registros de 32 bits, ya que permiten almacenar los 24 bits correspondientes a cada grupo de 4 caracteres Base64. Se trabaja en el registro acumulador, donde se van incorporando las posiciones obtenidas de la tabla. Para ello, se desplaza su contenido 6 bits hacia la izquierda y agrega la nueva posición. De esta manera, cada posición ocupa 6 bits y se van agrupando hasta completar los 24 bits del grupo. Una vez reunidos, se utilizan desplazamientos y máscaras para obtener los tres bytes que se almacenan en el destino.
+
+La elección de algunos registros fue determinada por las operaciones realizadas, mientras que otros siguen convenciones:
+
+- RSI: Se utiliza como puntero de origen (`secuenciaImprimibleB`). Avanza una posición por cada carácter leído.
+
+- RDI: Se utiliza como puntero de destino (`secuenciaBinariaB`). Una vez generados los tres bytes, avanza tres posiciones.
+
+- RAX/EAX/AL: Se utiliza como registro acumulador. AL recibe el carácter imprimible leído desde la secuencia. Luego, EAX almacena progresivamente las posiciones encontradas en la tabla, desplazando su contenido 6 bits hacia la izquierda y agregando cada nueva posición. Finalmente, contiene los 24 bits necesarios para reconstruir los tres bytes.
+
+- RCX/ECX: Se utiliza como contador durante la búsqueda de la posición de cada carácter dentro de `TablaConversion`. Comienza en cero y se incrementa hasta encontrar una coincidencia. Su valor final representa el índice del carácter dentro de la tabla.
+
+- RDX/EDX: Se utiliza como contador para llevar la cantidad de caracteres procesados dentro de cada grupo de 4. Al completar el grupo, también se reutiliza como registro temporal para extraer los tres bytes del acumulador mediante desplazamientos y máscaras.
+
 
 **Integrantes**: Joaquin Penna y Guadalupe Avalos
