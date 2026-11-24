@@ -116,10 +116,3 @@ generar_bytes:
     jne recorrido_caracteres
 
     ret
-    
-    
-    
-    
-
-
-    
