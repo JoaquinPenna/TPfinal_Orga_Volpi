@@ -14,7 +14,7 @@ section	.bss
 section	.text
 
 main:
-    mov rbp, rsp; for correct debugging
+    mov rbp, rsp
 
 ; rsi apunta al origen, es decir, a la cadena imprimible
 ; rdi apunta al destino, es decir, al lugar donde se almacenarán los 
